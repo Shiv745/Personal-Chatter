@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseAI Agent</title>
+  <link rel="stylesheet" href="/ui/style.css" />
+</head>
+<body class="theme-instagram">
+  <!-- TOP CONTROL BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge">AI</div>
+      <span class="brand-title">PulseAI Agent</span>
+      <span class="brand-sub">v2.0</span>
+    </div>
+
+    <div class="mode-pills" id="modePills">
+      <button class="pill active" data-mode="autopilot">Full Autopilot <span class="dot"></span></button>
+      <button class="pill" data-mode="hybrid">Hybrid</button>
+      <button class="pill" data-mode="copilot">Co-pilot</button>
+    </div>
+
+    <div class="topbar-right">
+      <div class="gemini-badge" id="geminiBadge">
+        <span class="spark">✦</span>
+        <span id="geminiStatusText">Gemini AI: Checking...</span>
+      </div>
+      <button class="btn btn-start" id="btnStart">▶ Start</button>
+      <button class="btn btn-pause" id="btnPause">⏸ Pause</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- LEFT PLATFORM SIDEBAR -->
+    <aside class="sidebar">
+      <nav class="nav-group">
+        <button class="nav-item active" data-view="instagram">
+          <span class="nav-icon">◎</span>
+          <span>Instagram</span>
+        </button>
+        <button class="nav-item" data-view="whatsapp">
+          <span class="nav-icon">✆</span>
+          <span>WhatsApp</span>
+        </button>
+        <button class="nav-item" data-view="linkedin">
+          <span class="nav-icon">in</span>
+          <span>LinkedIn</span>
+        </button>
+      </nav>
+      <div class="nav-spacer"></div>
+      <nav class="nav-group">
+        <button class="nav-item" data-view="database">
+          <span class="nav-icon">▤</span>
+          <span>Database</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <span class="nav-icon">⚙</span>
+          <span>Settings</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CHAT VIEW (INSTAGRAM / WHATSAPP / LINKEDIN) -->
+    <main class="main-panel" id="chatWorkspace">
+      <div class="panel-header">
+        <div class="platform-heading">
+          <span class="platform-pill-title" id="platformTitle">Instagram Mode</span>
+          <select id="contactSelector" class="contact-select"></select>
+          <button class="btn-ghost btn-sm" id="btnQuickAdd">+ Add Contact</button>
+        </div>
+
+        <div class="persona-bar" id="personaBar">
+          <span class="muted-label">Persona:</span>
+          <button class="persona-pill" data-persona="personal">Personal</button>
+          <button class="persona-pill" data-persona="friendly">Friendly</button>
+          <button class="persona-pill" data-persona="professional">Professional</button>
+        </div>
+      </div>
+
+      <!-- CUSTOM CHAT STYLE & TARGET STEERING BAR -->
+      <div class="strategy-bar" id="strategyBar">
+        <div class="strategy-inputs">
+          <div class="strategy-field">
+            <label>Chat Style (Kis tarah baat karni hai)</label>
+            <input type="text" id="chatStyleInput" placeholder="e.g. Funny, playful teasing, soft romantic Hinglish..." />
+          </div>
+          <div class="strategy-field">
+            <label>Target / Goal (Kya achieve karna hai)</label>
+            <input type="text" id="chatTargetInput" placeholder="e.g. Propose for coffee date / Say I love you..." />
+          </div>
+          <button class="btn btn-accent btn-sm strategy-save-btn" id="btnSaveStrategy">✓ Set Style & Target</button>
+        </div>
+        <div class="preset-row">
+          <span class="muted-label">Quick Targets:</span>
+          <div class="preset-chips" id="targetPresetChips"></div>
+        </div>
+      </div>
+
+      <!-- HYBRID APPROVAL ALERT BANNER -->
+      <div class="approval-banner hidden" id="approvalBanner">
+        <div class="approval-head">
+          <strong>⚠ Hybrid Approval Needed:</strong>
+          <span id="approvalReason"></span>
+        </div>
+        <textarea id="approvalEditBox" rows="2"></textarea>
+        <div class="approval-actions">
+          <button class="btn btn-start btn-sm" id="btnApproveSend">✓ Approve & Send</button>
+          <button class="btn btn-pause btn-sm" id="btnRejectSend">✕ Skip</button>
+        </div>
+      </div>
+
+      <!-- LIVE CHAT FEED -->
+      <div class="chat-feed" id="chatFeed">
+        <div class="empty-state">Select or add a contact to view chat & test Gemini replies.</div>
+      </div>
+
+      <!-- CO-PILOT QUICK CHIPS -->
+      <div class="copilot-bar hidden" id="copilotBar">
+        <span class="muted-label">Co-pilot Picks:</span>
+        <div class="copilot-chips" id="copilotChips"></div>
+      </div>
+
+      <!-- COMPOSER + SIMULATOR + TARGET EXECUTION BAR -->
+      <div class="composer-wrap">
+        <div class="composer-row">
+          <select id="inputDirection" class="dir-select" title="Test incoming message or send manually">
+            <option value="simulate">Simulate Incoming (Test AI)</option>
+            <option value="manual">Send as Me (Manual)</option>
+          </select>
+          <input type="text" id="chatInput" placeholder="Type her test message to see Gemini reply (or switch to Manual)..." />
+          <button class="btn btn-accent" id="btnSendMsg">Send ➤</button>
+        </div>
+
+        <div class="status-footer">
+          <div class="anti-ban-status" id="antiBanStatus">
+            Typing Status: Idle | Poll: 22-45s | Hourly Cap: 0/18
+          </div>
+          <button class="btn-propose" id="btnPropose">✦ Execute Target Now</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR: PROFILE INTEL & MEMORY -->
+    <aside class="intel-panel" id="intelPanel">
+      <div class="intel-header">
+        <span id="intelTitle">PROFILE INTEL</span>
+        <button class="btn-ghost btn-xs" id="btnScanProfile">⟳ Scan Profile</button>
+      </div>
+
+      <div class="intel-body" id="intelBody">
+        <div class="intel-contact-name" id="intelName">—</div>
+        <div class="intel-handle" id="intelHandle">@—</div>
+
+        <div class="intel-section" id="secRole">
+          <label>Role & Company</label>
+          <div class="intel-text" id="intelRole">—</div>
+        </div>
+
+        <div class="intel-section">
+          <label>Bio Summary</label>
+          <div class="intel-text" id="intelBio">—</div>
+        </div>
+
+        <div class="intel-section" id="secSongs">
+          <label>Favorite Songs & Music</label>
+          <div class="tag-list" id="intelSongs"></div>
+        </div>
+
+        <div class="intel-section" id="secHobbies">
+          <label>Hobbies</label>
+          <div class="tag-list" id="intelHobbies"></div>
+        </div>
+
+        <div class="intel-section" id="secLikes">
+          <label>Likes</label>
+          <div class="tag-list" id="intelLikes"></div>
+        </div>
+
+        <div class="intel-section" id="secSkills">
+          <label>Top Skills</label>
+          <div class="tag-list" id="intelSkills"></div>
+        </div>
+
+        <div class="intel-section" id="secActivity">
+          <label>Recent Activity</label>
+          <div class="tag-list" id="intelActivity"></div>
+        </div>
+
+        <div class="intel-section">
+          <label>Saved Memory & Inside Jokes</label>
+          <div class="tag-list" id="intelFacts"></div>
+          <div class="mini-add-row">
+            <input type="text" id="newFactInput" placeholder="Add inside joke / note..." />
+            <button class="btn-ghost btn-xs" id="btnAddFact">+</button>
+          </div>
+        </div>
+
+        <div class="intel-section">
+          <label>Stage & Warmth Score</label>
+          <div class="stage-row">
+            <select id="stageSelect" class="mini-select">
+              <option value="casual">Casual</option>
+              <option value="flirty">Flirty</option>
+              <option value="romantic">Romantic</option>
+              <option value="propose">Propose Ready</option>
+            </select>
+            <span id="warmthLabel">5/10</span>
+          </div>
+          <div class="warmth-meter" id="warmthMeter"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- DATABASE VIEW -->
+    <section class="full-view hidden" id="databaseView">
+      <div class="view-header">
+        <h2>SQLite Memory Database (agent_memory.db)</h2>
+        <button class="btn btn-accent" id="btnExportDb">⬇ Export JSON</button>
+      </div>
+      <div class="db-grid">
+        <div class="card">
+          <h3>Whitelisted Contacts</h3>
+          <table class="data-table" id="dbContactsTable">
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>Name</th>
+                <th>Handle</th>
+                <th>Target</th>
+                <th>Stage</th>
+                <th>Warmth</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>Live Engine Activity Logs</h3>
+          <div class="log-box" id="activityLogs"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section class="full-view hidden" id="settingsView">
+      <div class="view-header">
+        <h2>Agent & Anti-Ban Settings</h2>
+        <button class="btn btn-start" id="btnSaveSettings">✓ Save Settings</button>
+      </div>
+      <div class="settings-grid">
+        <div class="card">
+          <h3>Gemini API & Identity</h3>
+          <label class="form-label">Gemini API Key</label>
+          <input type="password" id="cfgApiKey" class="form-input" placeholder="AIza..." />
+
+          <label class="form-label">Primary Model ID (Editable for any Gemini model)</label>
+          <input type="text" id="cfgPrimaryModel" class="form-input" placeholder="gemini-3.5-flash" />
+
+          <label class="form-label">Propose / Target Execution Model ID</label>
+          <input type="text" id="cfgProposeModel" class="form-input" placeholder="gemini-3.5-flash" />
+
+          <label class="form-label">Fallback Model ID (Used during high demand)</label>
+          <input type="text" id="cfgFallbackModel" class="form-input" placeholder="gemini-3.5-flash" />
+
+          <label class="form-label">Optional Custom Base URL (Leave blank for official Google API)</label>
+          <input type="text" id="cfgBaseUrl" class="form-input" placeholder="https://..." />
+
+          <label class="form-label">Your Name (Used in chats)</label>
+          <input type="text" id="cfgYourName" class="form-input" />
+        </div>
+
+        <div class="card">
+          <h3>Anti-Ban Human Delays & Hourly Caps</h3>
+          <div class="delay-block">
+            <h4>Instagram (Strict)</h4>
+            <div class="inline-fields">
+              <label>Poll Min (s)<input type="number" id="igPollMin" class="form-input" /></label>
+              <label>Poll Max (s)<input type="number" id="igPollMax" class="form-input" /></label>
+              <label>Max/Hour<input type="number" id="igCap" class="form-input" /></label>
+            </div>
+          </div>
+          <div class="delay-block">
+            <h4>WhatsApp (Moderate)</h4>
+            <div class="inline-fields">
+              <label>Poll Min (s)<input type="number" id="waPollMin" class="form-input" /></label>
+              <label>Poll Max (s)<input type="number" id="waPollMax" class="form-input" /></label>
+              <label>Max/Hour<input type="number" id="waCap" class="form-input" /></label>
+            </div>
+          </div>
+          <div class="delay-block">
+            <h4>LinkedIn (Conservative)</h4>
+            <div class="inline-fields">
+              <label>Poll Min (s)<input type="number" id="liPollMin" class="form-input" /></label>
+              <label>Poll Max (s)<input type="number" id="liPollMax" class="form-input" /></label>
+              <label>Max/Hour<input type="number" id="liCap" class="form-input" /></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ADD CONTACT MODAL -->
+  <div class="modal-backdrop hidden" id="addModal">
+    <div class="modal">
+      <h3>Add Whitelisted Contact</h3>
+      <label class="form-label">Platform</label>
+      <select id="newContactPlatform" class="form-input">
+        <option value="instagram">Instagram</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="linkedin">LinkedIn</option>
+      </select>
+      <label class="form-label">Display Name</label>
+      <input type="text" id="newContactName" class="form-input" placeholder="e.g. Sneha / Ankit Sharma" />
+      <label class="form-label">Exact Username / WhatsApp Chat Name / LinkedIn Slug</label>
+      <input type="text" id="newContactHandle" class="form-input" placeholder="e.g. sneha_t or exact WA contact name" />
+      <label class="form-label">Profile URL (Optional, helpful for LinkedIn scan)</label>
+      <input type="text" id="newContactUrl" class="form-input" placeholder="https://www.linkedin.com/in/..." />
+      <label class="form-label">Persona</label>
+      <select id="newContactPersona" class="form-input">
+        <option value="personal">Personal (Witty / Romantic)</option>
+        <option value="friendly">Friendly (Chill / Funny)</option>
+        <option value="professional">Professional (LinkedIn Networking)</option>
+      </select>
+      <label class="form-label">Chat Style (Optional)</label>
+      <input type="text" id="newContactStyle" class="form-input" placeholder="e.g. Witty, playful teasing, soft romantic" />
+      <label class="form-label">Target / Goal (Optional)</label>
+      <input type="text" id="newContactTarget" class="form-input" placeholder="e.g. Ask out for coffee / Propose for date / Say I love you" />
+      <div class="modal-actions">
+        <button class="btn btn-pause" id="btnCancelModal">Cancel</button>
+        <button class="btn btn-start" id="btnConfirmAdd">Save to Whitelist</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+  <script src="/ui/app.js"></script>
+</body>
+</html>
